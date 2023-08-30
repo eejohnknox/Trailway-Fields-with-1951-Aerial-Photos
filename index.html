@@ -311,7 +311,28 @@
             };
             abstract.addTo(map);
         var baseMaps = {};
-        L.control.layers(baseMaps,{'<img src="legend/RailwayLine_6.png" /> RailwayLine': layer_RailwayLine_6,'<img src="legend/Railway_Fields_5.png" /> Railway_Fields': layer_Railway_Fields_5,"Esri Imagery": layer_EsriImagery_4,"Google Maps": layer_GoogleMaps_3,"Google Satellite": layer_GoogleSatellite_2,"Google Satellite Hybrid": layer_GoogleSatelliteHybrid_1,"OpenStreetMap": layer_OpenStreetMap_0,}).addTo(map);
+
+        
+
+                    var lyr20230826AerialPhotos4632;
+                    lyr20230826AerialPhotos4632 = L.imageOverlay(
+                      'images/20230826AerialPhotos4632.png' , [
+                        [13.186864556,-59.615832229] ,
+                        [13.091936870, -59.433683615]]).addTo(map);
+
+
+
+
+        objOverlays = {"1951 Aerial Photos":lyr20230826AerialPhotos4632};
+
+
+        baseMaps = {'<img src="legend/RailwayLine_6.png" /> RailwayLine': layer_RailwayLine_6,'<img src="legend/Railway_Fields_5.png" /> Railway_Fields': layer_Railway_Fields_5,"Esri Imagery": layer_EsriImagery_4,"Google Maps": layer_GoogleMaps_3,"Google Satellite": layer_GoogleSatellite_2,"Google Satellite Hybrid": layer_GoogleSatelliteHybrid_1,"OpenStreetMap": layer_OpenStreetMap_0,},{collapsed:false};
+
+        L.control.layers(objOverlays, baseMaps).addTo(map);
+
+
+
+            
         setBounds();
         var mapDiv = document.getElementById('map');
         var row = document.createElement('div');
