@@ -1,0 +1,734 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <link rel="stylesheet" href="css/leaflet.css"><link rel="stylesheet" href="css/L.Control.Locate.min.css">
+        <link rel="stylesheet" href="css/qgis2web.css"><link rel="stylesheet" href="css/fontawesome-all.min.css">
+        <link rel="stylesheet" href="css/filter.css">
+<link rel="stylesheet" href="css/nouislider.min.css">
+        <link rel="stylesheet" href="css/leaflet-measure.css">
+        <style>
+        html, body, #map {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+        }
+        </style>
+        <title>Fields along the Trailway</title>
+    </head>
+    <body>
+        <div id="map">
+        </div>
+        <script src="js/qgis2web_expressions.js"></script>
+        <script src="js/leaflet.js"></script><script src="js/L.Control.Locate.min.js"></script>
+        <script src="js/multi-style-layer.js"></script>
+        <script src="js/leaflet.rotatedMarker.js"></script>
+        <script src="js/leaflet.pattern.js"></script>
+        <script src="js/leaflet-hash.js"></script>
+        <script src="js/Autolinker.min.js"></script>
+        <script src="js/rbush.min.js"></script>
+        <script src="js/labelgun.min.js"></script>
+        <script src="js/labels.js"></script>
+        <script src="js/leaflet-measure.js"></script>
+        <script src="js/tailDT.js"></script>
+<script src="js/nouislider.min.js"></script>
+<script src="js/wNumb.js"></script>
+        <script src="data/Railway_Fields_5.js"></script>
+        <script src="data/RailwayLine_6.js"></script>
+        <script>
+        var highlightLayer;
+        function highlightFeature(e) {
+            highlightLayer = e.target;
+
+            if (e.target.feature.geometry.type === 'LineString') {
+              highlightLayer.setStyle({
+                color: '#ffff00',
+              });
+            } else {
+              highlightLayer.setStyle({
+                fillColor: '#ffff00',
+                fillOpacity: 1
+              });
+            }
+            highlightLayer.openPopup();
+        }
+        var map = L.map('map', {
+            zoomControl:true, maxZoom:28, minZoom:1
+        })
+        var hash = new L.Hash(map);
+        map.attributionControl.setPrefix('<a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a> &middot; <a href="https://leafletjs.com" title="A JS library for interactive maps">Leaflet</a> &middot; <a href="https://qgis.org">QGIS</a>');
+        var autolinker = new Autolinker({truncate: {length: 30, location: 'smart'}});
+        L.control.locate({locateOptions: {maxZoom: 19}}).addTo(map);
+        var measureControl = new L.Control.Measure({
+            position: 'topleft',
+            primaryLengthUnit: 'feet',
+            secondaryLengthUnit: 'miles',
+            primaryAreaUnit: 'sqfeet',
+            secondaryAreaUnit: 'sqmiles'
+        });
+        measureControl.addTo(map);
+        document.getElementsByClassName('leaflet-control-measure-toggle')[0]
+        .innerHTML = '';
+        document.getElementsByClassName('leaflet-control-measure-toggle')[0]
+        .className += ' fas fa-ruler';
+        var bounds_group = new L.featureGroup([]);
+        function setBounds() {
+            if (bounds_group.getLayers().length) {
+                map.fitBounds(bounds_group.getBounds());
+            }
+            map.setMaxBounds(map.getBounds());
+        }
+        map.createPane('pane_OpenStreetMap_0');
+        map.getPane('pane_OpenStreetMap_0').style.zIndex = 400;
+        var layer_OpenStreetMap_0 = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            pane: 'pane_OpenStreetMap_0',
+            opacity: 1.0,
+            attribution: '',
+            minZoom: 1,
+            maxZoom: 28,
+            minNativeZoom: 0,
+            maxNativeZoom: 19
+        });
+        layer_OpenStreetMap_0;
+        map.addLayer(layer_OpenStreetMap_0);
+        map.createPane('pane_GoogleSatelliteHybrid_1');
+        map.getPane('pane_GoogleSatelliteHybrid_1').style.zIndex = 401;
+        var layer_GoogleSatelliteHybrid_1 = L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
+            pane: 'pane_GoogleSatelliteHybrid_1',
+            opacity: 1.0,
+            attribution: '',
+            minZoom: 1,
+            maxZoom: 28,
+            minNativeZoom: 0,
+            maxNativeZoom: 22
+        });
+        layer_GoogleSatelliteHybrid_1;
+        map.addLayer(layer_GoogleSatelliteHybrid_1);
+        map.createPane('pane_GoogleSatellite_2');
+        map.getPane('pane_GoogleSatellite_2').style.zIndex = 402;
+        var layer_GoogleSatellite_2 = L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+            pane: 'pane_GoogleSatellite_2',
+            opacity: 1.0,
+            attribution: '',
+            minZoom: 1,
+            maxZoom: 28,
+            minNativeZoom: 0,
+            maxNativeZoom: 22
+        });
+        layer_GoogleSatellite_2;
+        map.addLayer(layer_GoogleSatellite_2);
+        map.createPane('pane_GoogleMaps_3');
+        map.getPane('pane_GoogleMaps_3').style.zIndex = 403;
+        var layer_GoogleMaps_3 = L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+            pane: 'pane_GoogleMaps_3',
+            opacity: 1.0,
+            attribution: '',
+            minZoom: 1,
+            maxZoom: 28,
+            minNativeZoom: 0,
+            maxNativeZoom: 22
+        });
+        layer_GoogleMaps_3;
+        map.addLayer(layer_GoogleMaps_3);
+        map.createPane('pane_EsriImagery_4');
+        map.getPane('pane_EsriImagery_4').style.zIndex = 404;
+        var layer_EsriImagery_4 = L.tileLayer('https://server.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            pane: 'pane_EsriImagery_4',
+            opacity: 1.0,
+            attribution: '',
+            minZoom: 1,
+            maxZoom: 28,
+            minNativeZoom: 0,
+            maxNativeZoom: 22
+        });
+        layer_EsriImagery_4;
+        map.addLayer(layer_EsriImagery_4);
+        function pop_Railway_Fields_5(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    for (i in e.target._eventParents) {
+                        e.target._eventParents[i].resetStyle(e.target);
+                    }
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <th scope="row">Field Name</th>\
+                        <td>' + (feature.properties['FIELD_NAME'] !== null ? autolinker.link(feature.properties['FIELD_NAME'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Approx. Acreage</th>\
+                        <td>' + (feature.properties['ACREAGE'] !== null ? autolinker.link(feature.properties['ACREAGE'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">PLANTATION</th>\
+                        <td>' + (feature.properties['PLANTATION'] !== null ? autolinker.link(feature.properties['PLANTATION'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">PARISH</th>\
+                        <td>' + (feature.properties['PARISH'] !== null ? autolinker.link(feature.properties['PARISH'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Name Origin</th>\
+                        <td>' + (feature.properties['TYPE'] !== null ? autolinker.link(feature.properties['TYPE'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Railway</th>\
+                        <td>' + (feature.properties['Railway'] !== null ? autolinker.link(feature.properties['Railway'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent, {maxHeight: 400});
+        }
+
+        function style_Railway_Fields_5_0() {
+            return {
+                pane: 'pane_Railway_Fields_5',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(51,160,44,1.0)',
+                interactive: true,
+            }
+        }
+        map.createPane('pane_Railway_Fields_5');
+        map.getPane('pane_Railway_Fields_5').style.zIndex = 405;
+        map.getPane('pane_Railway_Fields_5').style['mix-blend-mode'] = 'normal';
+        var layer_Railway_Fields_5 = new L.geoJson(json_Railway_Fields_5, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_Railway_Fields_5',
+            layerName: 'layer_Railway_Fields_5',
+            pane: 'pane_Railway_Fields_5',
+            onEachFeature: pop_Railway_Fields_5,
+            style: style_Railway_Fields_5_0,
+        });
+        bounds_group.addLayer(layer_Railway_Fields_5);
+        map.addLayer(layer_Railway_Fields_5);
+        function pop_RailwayLine_6(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    for (i in e.target._eventParents) {
+                        e.target._eventParents[i].resetStyle(e.target);
+                    }
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['þÿ'] !== null ? autolinker.link(feature.properties['þÿ'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent, {maxHeight: 400});
+        }
+
+        function style_RailwayLine_6_0() {
+            return {
+                pane: 'pane_RailwayLine_6',
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'round',
+                lineJoin: 'round',
+                weight: 1.0,
+                fillOpacity: 0,
+                interactive: false,
+            }
+        }
+        function style_RailwayLine_6_1() {
+            return {
+                pane: 'pane_RailwayLine_6',
+                interactive: false,
+            }
+        }
+        map.createPane('pane_RailwayLine_6');
+        map.getPane('pane_RailwayLine_6').style.zIndex = 406;
+        map.getPane('pane_RailwayLine_6').style['mix-blend-mode'] = 'normal';
+        var layer_RailwayLine_6 = new L.geoJson.multiStyle(json_RailwayLine_6, {
+            attribution: '',
+            interactive: false,
+            dataVar: 'json_RailwayLine_6',
+            layerName: 'layer_RailwayLine_6',
+            pane: 'pane_RailwayLine_6',
+            onEachFeature: pop_RailwayLine_6,
+            styles: [style_RailwayLine_6_0,style_RailwayLine_6_1,]
+        });
+        bounds_group.addLayer(layer_RailwayLine_6);
+        map.addLayer(layer_RailwayLine_6);
+            var title = new L.Control();
+            title.onAdd = function (map) {
+                this._div = L.DomUtil.create('div', 'info');
+                this.update();
+                return this._div;
+            };
+            title.update = function () {
+                this._div.innerHTML = '<h2>Fields along the Trailway</h2>';
+            };
+            title.addTo(map);
+            var abstract = new L.Control({'position':'topright'});
+            abstract.onAdd = function (map) {
+                this._div = L.DomUtil.create('div',
+                'leaflet-control abstract');
+                this._div.id = 'abstract'
+                    this._div.setAttribute("onmouseenter", "abstract.show()");
+                    this._div.setAttribute("onmouseleave", "abstract.hide()");
+                    this.hide();
+                    return this._div;
+                };
+                abstract.hide = function () {
+                    this._div.classList.remove("abstractUncollapsed");
+                    this._div.classList.add("abstract");
+                    this._div.innerHTML = 'i'
+                }
+                abstract.show = function () {
+                    this._div.classList.remove("abstract");
+                    this._div.classList.add("abstractUncollapsed");
+                    this._div.innerHTML = 'Using the geospatiale data collected by the late Dr. Colin Hudson and his UWI Students in the 1970\'s, field names are assigned to fields along the Trailway. Some of these names are easily dated to the 17th Century as their owners appear on 17th and 18th century maps and some (Garden) indicate possible burial sites at various plantations in use long before the advent of the Railway in the late 19th Century.<br /><br />Example of plantation names related to early owners are:<br /><br />Constant Silvester owned Constant and Carmichael<br /><br />Bulkeley, Buttals, Bentley, and Fortescue were all early land owners.<br />';
+            };
+            abstract.addTo(map);
+        var baseMaps = {};
+        L.control.layers(baseMaps,{'<img src="legend/RailwayLine_6.png" /> RailwayLine': layer_RailwayLine_6,'<img src="legend/Railway_Fields_5.png" /> Railway_Fields': layer_Railway_Fields_5,"Esri Imagery": layer_EsriImagery_4,"Google Maps": layer_GoogleMaps_3,"Google Satellite": layer_GoogleSatellite_2,"Google Satellite Hybrid": layer_GoogleSatelliteHybrid_1,"OpenStreetMap": layer_OpenStreetMap_0,}).addTo(map);
+        setBounds();
+        var mapDiv = document.getElementById('map');
+        var row = document.createElement('div');
+        row.className="row";
+        row.id="all";
+        row.style.height = "100%";
+        var col1 = document.createElement('div');
+        col1.className="col9";
+        col1.id = "mapWindow";
+        col1.style.height = "99%";
+        col1.style.width = "80%";
+        col1.style.display = "inline-block";
+        var col2 = document.createElement('div');
+        col2.className="col3";
+        col2.id = "menu";
+        col2.style.display = "inline-block";
+        mapDiv.parentNode.insertBefore(row, mapDiv);
+        document.getElementById("all").appendChild(col1);
+        document.getElementById("all").appendChild(col2);
+        col1.appendChild(mapDiv)
+        var Filters = {"PLANTATION": "str","FIELD_NAME": "str"};
+        function filterFunc() {
+          map.eachLayer(function(lyr){
+          if ("options" in lyr && "dataVar" in lyr["options"]){
+            features = this[lyr["options"]["dataVar"]].features.slice(0);
+            try{
+              for (key in Filters){
+                keyS = key.replace(/[^a-zA-Z0-9_]/g, "")
+                if (Filters[key] == "str" || Filters[key] == "bool"){
+                  var selection = [];
+                  var options = document.getElementById("sel_" + keyS).options
+                  for (var i=0; i < options.length; i++) {
+                    if (options[i].selected) selection.push(options[i].value);
+                  }
+                    try{
+                      if (key in features[0].properties){
+                        for (i = features.length - 1;
+                          i >= 0; --i){
+                          if (selection.indexOf(
+                          features[i].properties[key])<0
+                          && selection.length>0) {
+                          features.splice(i,1);
+                          }
+                        }
+                      }
+                    } catch(err){
+                  }
+                }
+                if (Filters[key] == "int"){
+                  sliderVals =  document.getElementById(
+                    "div_" + keyS).noUiSlider.get();
+                  try{
+                    if (key in features[0].properties){
+                    for (i = features.length - 1; i >= 0; --i){
+                      if (parseInt(features[i].properties[key])
+                          < sliderVals[0]
+                          || parseInt(features[i].properties[key])
+                          > sliderVals[1]){
+                            features.splice(i,1);
+                          }
+                        }
+                      }
+                    } catch(err){
+                    }
+                  }
+                if (Filters[key] == "real"){
+                  sliderVals =  document.getElementById(
+                    "div_" + keyS).noUiSlider.get();
+                  try{
+                    if (key in features[0].properties){
+                    for (i = features.length - 1; i >= 0; --i){
+                      if (features[i].properties[key]
+                          < sliderVals[0]
+                          || features[i].properties[key]
+                          > sliderVals[1]){
+                            features.splice(i,1);
+                          }
+                        }
+                      }
+                    } catch(err){
+                    }
+                  }
+                if (Filters[key] == "date"
+                  || Filters[key] == "datetime"
+                  || Filters[key] == "time"){
+                  try{
+                    if (key in features[0].properties){
+                      HTMLkey = key.replace(/[&\/\\#,+()$~%.'":*?<>{} ]/g, '');
+                      startdate = document.getElementById("dat_" +
+                        HTMLkey + "_date1").value.replace(" ", "T");
+                      enddate = document.getElementById("dat_" +
+                        HTMLkey + "_date2").value.replace(" ", "T");
+                      for (i = features.length - 1; i >= 0; --i){
+                        if (features[i].properties[key] < startdate
+                          || features[i].properties[key] > enddate){
+                          features.splice(i,1);
+                        }
+                      }
+                    }
+                  } catch(err){
+                  }
+                }
+              }
+            } catch(err){
+            }
+          this[lyr["options"]["layerName"]].clearLayers();
+          this[lyr["options"]["layerName"]].addData(features);
+          }
+          })
+        }
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_PLANTATION = document.createElement('div');
+            div_PLANTATION.id = "div_PLANTATION";
+            div_PLANTATION.className= "filterselect";
+            document.getElementById("menu").appendChild(div_PLANTATION);
+            sel_PLANTATION = document.createElement('select');
+            sel_PLANTATION.multiple = true;
+            sel_PLANTATION.size = 10;
+            sel_PLANTATION.id = "sel_PLANTATION";
+            var PLANTATION_options_str = "<option value='' unselected></option>";
+            sel_PLANTATION.onchange = function(){filterFunc()};
+            PLANTATION_options_str  += '<option value="Bentley">Bentley</option>';
+            PLANTATION_options_str  += '<option value="Brighton">Brighton</option>';
+            PLANTATION_options_str  += '<option value="Bulkeley">Bulkeley</option>';
+            PLANTATION_options_str  += '<option value="Bushy Park">Bushy Park</option>';
+            PLANTATION_options_str  += '<option value="Buttals">Buttals</option>';
+            PLANTATION_options_str  += '<option value="Carrington">Carrington</option>';
+            PLANTATION_options_str  += '<option value="Constant">Constant</option>';
+            PLANTATION_options_str  += '<option value="Fairfield">Fairfield</option>';
+            PLANTATION_options_str  += '<option value="Four Square">Four Square</option>';
+            PLANTATION_options_str  += '<option value="Grove">Grove</option>';
+            PLANTATION_options_str  += '<option value="Hampton">Hampton</option>';
+            PLANTATION_options_str  += '<option value="Hampton or Four Square">Hampton or Four Square</option>';
+            PLANTATION_options_str  += '<option value="Harrow">Harrow</option>';
+            PLANTATION_options_str  += '<option value="Sandy Hill">Sandy Hill</option>';
+            PLANTATION_options_str  += '<option value="Stirling">Stirling</option>';
+            PLANTATION_options_str  += '<option value="Sunbury">Sunbury</option>';
+            PLANTATION_options_str  += '<option value="The Valley">The Valley</option>';
+            PLANTATION_options_str  += '<option value="Thicket">Thicket</option>';
+            PLANTATION_options_str  += '<option value="Three Houses">Three Houses</option>';
+            PLANTATION_options_str  += '<option value="Vineyard">Vineyard</option>';
+            PLANTATION_options_str  += '<option value="Windsor">Windsor</option>';
+            sel_PLANTATION.innerHTML = PLANTATION_options_str;
+            div_PLANTATION.appendChild(sel_PLANTATION);
+            var lab_PLANTATION = document.createElement('div');
+            lab_PLANTATION.innerHTML = 'PLANTATION';
+            lab_PLANTATION.className = 'filterlabel';
+            div_PLANTATION.appendChild(lab_PLANTATION);
+            var reset_PLANTATION = document.createElement('div');
+            reset_PLANTATION.innerHTML = 'clear filter';
+            reset_PLANTATION.className = 'filterlabel';
+            reset_PLANTATION.onclick = function() {
+                var options = document.getElementById("sel_PLANTATION").options;
+                for (var i=0; i < options.length; i++) {
+                    options[i].selected = false;
+                }
+                filterFunc();
+            };
+            div_PLANTATION.appendChild(reset_PLANTATION);
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_FIELD_NAME = document.createElement('div');
+            div_FIELD_NAME.id = "div_FIELD_NAME";
+            div_FIELD_NAME.className= "filterselect";
+            document.getElementById("menu").appendChild(div_FIELD_NAME);
+            sel_FIELD_NAME = document.createElement('select');
+            sel_FIELD_NAME.multiple = true;
+            sel_FIELD_NAME.size = 10;
+            sel_FIELD_NAME.id = "sel_FIELD_NAME";
+            var FIELD_NAME_options_str = "<option value='' unselected></option>";
+            sel_FIELD_NAME.onchange = function(){filterFunc()};
+            FIELD_NAME_options_str  += '<option value="11 Acre">11 Acre</option>';
+            FIELD_NAME_options_str  += '<option value="??">??</option>';
+            FIELD_NAME_options_str  += '<option value="Above and Below Pond">Above and Below Pond</option>';
+            FIELD_NAME_options_str  += '<option value="Above the Yard">Above the Yard</option>';
+            FIELD_NAME_options_str  += '<option value="Alpha 1">Alpha 1</option>';
+            FIELD_NAME_options_str  += '<option value="Alpha 2">Alpha 2</option>';
+            FIELD_NAME_options_str  += '<option value="Bean Field Valley">Bean Field Valley</option>';
+            FIELD_NAME_options_str  += '<option value="Before the Pond">Before the Pond</option>';
+            FIELD_NAME_options_str  += '<option value="Below Cow House">Below Cow House</option>';
+            FIELD_NAME_options_str  += '<option value="Bentley Plantation Yard">Bentley Plantation Yard</option>';
+            FIELD_NAME_options_str  += '<option value="Bentley Tenant">Bentley Tenant</option>';
+            FIELD_NAME_options_str  += '<option value="Big Barker">Big Barker</option>';
+            FIELD_NAME_options_str  += '<option value="Big Cheeseman">Big Cheeseman</option>';
+            FIELD_NAME_options_str  += '<option value="Big King Line">Big King Line</option>';
+            FIELD_NAME_options_str  += '<option value="Big Old Work">Big Old Work</option>';
+            FIELD_NAME_options_str  += '<option value="Bishop">Bishop</option>';
+            FIELD_NAME_options_str  += '<option value="Black Smith">Black Smith</option>';
+            FIELD_NAME_options_str  += '<option value="Bowman">Bowman</option>';
+            FIELD_NAME_options_str  += '<option value="Braithwaite Line">Braithwaite Line</option>';
+            FIELD_NAME_options_str  += '<option value="Brewster Field">Brewster Field</option>';
+            FIELD_NAME_options_str  += '<option value="Bulkeley Line">Bulkeley Line</option>';
+            FIELD_NAME_options_str  += '<option value="Bulkeley Mill Field">Bulkeley Mill Field</option>';
+            FIELD_NAME_options_str  += '<option value="Bulkeley Plantation Yard">Bulkeley Plantation Yard</option>';
+            FIELD_NAME_options_str  += '<option value="Burnt Ground">Burnt Ground</option>';
+            FIELD_NAME_options_str  += '<option value="Buttal&apos;s Plantation Yard">Buttal&apos;s Plantation Yard</option>';
+            FIELD_NAME_options_str  += '<option value="Buttals Line">Buttals Line</option>';
+            FIELD_NAME_options_str  += '<option value="Buttals Long Ground">Buttals Long Ground</option>';
+            FIELD_NAME_options_str  += '<option value="Buttals Roberts Gully">Buttals Roberts Gully</option>';
+            FIELD_NAME_options_str  += '<option value="Cabbage Tree">Cabbage Tree</option>';
+            FIELD_NAME_options_str  += '<option value="Car Race Track">Car Race Track</option>';
+            FIELD_NAME_options_str  += '<option value="Carmichael Roberts Gully">Carmichael Roberts Gully</option>';
+            FIELD_NAME_options_str  += '<option value="Carrington Factory Yard">Carrington Factory Yard</option>';
+            FIELD_NAME_options_str  += '<option value="Chaplim Line">Chaplim Line</option>';
+            FIELD_NAME_options_str  += '<option value="Church Field">Church Field</option>';
+            FIELD_NAME_options_str  += '<option value="Circle Field">Circle Field</option>';
+            FIELD_NAME_options_str  += '<option value="Clarke Field">Clarke Field</option>';
+            FIELD_NAME_options_str  += '<option value="Clarke Hill">Clarke Hill</option>';
+            FIELD_NAME_options_str  += '<option value="Clarke Pasture">Clarke Pasture</option>';
+            FIELD_NAME_options_str  += '<option value="Clarke Pond">Clarke Pond</option>';
+            FIELD_NAME_options_str  += '<option value="Clarke Valley">Clarke Valley</option>';
+            FIELD_NAME_options_str  += '<option value="Clay Field">Clay Field</option>';
+            FIELD_NAME_options_str  += '<option value="Constant Plantation/Factory Yard">Constant Plantation/Factory Yard</option>';
+            FIELD_NAME_options_str  += '<option value="Coronation">Coronation</option>';
+            FIELD_NAME_options_str  += '<option value="Dolly Hole + North + South Spring Ground">Dolly Hole + North + South Spring Ground</option>';
+            FIELD_NAME_options_str  += '<option value="East Cow House">East Cow House</option>';
+            FIELD_NAME_options_str  += '<option value="Eight Acre">Eight Acre</option>';
+            FIELD_NAME_options_str  += '<option value="Eleven Acre">Eleven Acre</option>';
+            FIELD_NAME_options_str  += '<option value="Fairfield">Fairfield</option>';
+            FIELD_NAME_options_str  += '<option value="Federation">Federation</option>';
+            FIELD_NAME_options_str  += '<option value="Fig Tree">Fig Tree</option>';
+            FIELD_NAME_options_str  += '<option value="Fish Pond">Fish Pond</option>';
+            FIELD_NAME_options_str  += '<option value="Four Acre">Four Acre</option>';
+            FIELD_NAME_options_str  += '<option value="GRASS">GRASS</option>';
+            FIELD_NAME_options_str  += '<option value="Gap Field">Gap Field</option>';
+            FIELD_NAME_options_str  += '<option value="Garden">Garden</option>';
+            FIELD_NAME_options_str  += '<option value="Garden Field">Garden Field</option>';
+            FIELD_NAME_options_str  += '<option value="Garden Ground">Garden Ground</option>';
+            FIELD_NAME_options_str  += '<option value="Garden Hill">Garden Hill</option>';
+            FIELD_NAME_options_str  += '<option value="Gittens">Gittens</option>';
+            FIELD_NAME_options_str  += '<option value="Gooding">Gooding</option>';
+            FIELD_NAME_options_str  += '<option value="Grannie 1">Grannie 1</option>';
+            FIELD_NAME_options_str  += '<option value="Grannie 2">Grannie 2</option>';
+            FIELD_NAME_options_str  += '<option value="Grass Pond">Grass Pond</option>';
+            FIELD_NAME_options_str  += '<option value="Grove Plantation Yard">Grove Plantation Yard</option>';
+            FIELD_NAME_options_str  += '<option value="Grove Yard Field">Grove Yard Field</option>';
+            FIELD_NAME_options_str  += '<option value="Grubble Field">Grubble Field</option>';
+            FIELD_NAME_options_str  += '<option value="Guava Pond">Guava Pond</option>';
+            FIELD_NAME_options_str  += '<option value="Hampton Plantation Yard">Hampton Plantation Yard</option>';
+            FIELD_NAME_options_str  += '<option value="Hog Sty">Hog Sty</option>';
+            FIELD_NAME_options_str  += '<option value="Little Barker">Little Barker</option>';
+            FIELD_NAME_options_str  += '<option value="Little Cheeseman">Little Cheeseman</option>';
+            FIELD_NAME_options_str  += '<option value="Little King Line">Little King Line</option>';
+            FIELD_NAME_options_str  += '<option value="Little Old Work">Little Old Work</option>';
+            FIELD_NAME_options_str  += '<option value="Loam Field">Loam Field</option>';
+            FIELD_NAME_options_str  += '<option value="Long Ground">Long Ground</option>';
+            FIELD_NAME_options_str  += '<option value="Long Hole">Long Hole</option>';
+            FIELD_NAME_options_str  += '<option value="Long Pond">Long Pond</option>';
+            FIELD_NAME_options_str  += '<option value="Lower Butlers">Lower Butlers</option>';
+            FIELD_NAME_options_str  += '<option value="Lower Carters">Lower Carters</option>';
+            FIELD_NAME_options_str  += '<option value="Lower Drinking Pond">Lower Drinking Pond</option>';
+            FIELD_NAME_options_str  += '<option value="Lower Farnell">Lower Farnell</option>';
+            FIELD_NAME_options_str  += '<option value="Lower Garden">Lower Garden</option>';
+            FIELD_NAME_options_str  += '<option value="Lower Gill">Lower Gill</option>';
+            FIELD_NAME_options_str  += '<option value="Lower Middle Valley">Lower Middle Valley</option>';
+            FIELD_NAME_options_str  += '<option value="Lower North Cricket Ground">Lower North Cricket Ground</option>';
+            FIELD_NAME_options_str  += '<option value="Lower North Murray">Lower North Murray</option>';
+            FIELD_NAME_options_str  += '<option value="Lower Railway Line">Lower Railway Line</option>';
+            FIELD_NAME_options_str  += '<option value="Lower South Cricket">Lower South Cricket</option>';
+            FIELD_NAME_options_str  += '<option value="Lower Valley">Lower Valley</option>';
+            FIELD_NAME_options_str  += '<option value="Mansion House">Mansion House</option>';
+            FIELD_NAME_options_str  += '<option value="Marl Hole">Marl Hole</option>';
+            FIELD_NAME_options_str  += '<option value="Merrit Field">Merrit Field</option>';
+            FIELD_NAME_options_str  += '<option value="Middle Field">Middle Field</option>';
+            FIELD_NAME_options_str  += '<option value="Mill Field">Mill Field</option>';
+            FIELD_NAME_options_str  += '<option value="Nat Valley">Nat Valley</option>';
+            FIELD_NAME_options_str  += '<option value="Negroe Yard">Negroe Yard</option>';
+            FIELD_NAME_options_str  += '<option value="New Clarke Ground">New Clarke Ground</option>';
+            FIELD_NAME_options_str  += '<option value="No. 1 Lynch">No. 1 Lynch</option>';
+            FIELD_NAME_options_str  += '<option value="No. 2 Lynch">No. 2 Lynch</option>';
+            FIELD_NAME_options_str  += '<option value="North & South Bottom Pond">North & South Bottom Pond</option>';
+            FIELD_NAME_options_str  += '<option value="North & South Rabbit Pen">North & South Rabbit Pen</option>';
+            FIELD_NAME_options_str  += '<option value="North 12 Acre">North 12 Acre</option>';
+            FIELD_NAME_options_str  += '<option value="North 17 Acre">North 17 Acre</option>';
+            FIELD_NAME_options_str  += '<option value="North 18 Acre">North 18 Acre</option>';
+            FIELD_NAME_options_str  += '<option value="North Bushy Park Line">North Bushy Park Line</option>';
+            FIELD_NAME_options_str  += '<option value="North Clarke Field">North Clarke Field</option>';
+            FIELD_NAME_options_str  += '<option value="North Clay Bottom">North Clay Bottom</option>';
+            FIELD_NAME_options_str  += '<option value="North Cousins Hill">North Cousins Hill</option>';
+            FIELD_NAME_options_str  += '<option value="North Gully Piece">North Gully Piece</option>';
+            FIELD_NAME_options_str  += '<option value="North Harding Door">North Harding Door</option>';
+            FIELD_NAME_options_str  += '<option value="North Haynes">North Haynes</option>';
+            FIELD_NAME_options_str  += '<option value="North Marl Hole">North Marl Hole</option>';
+            FIELD_NAME_options_str  += '<option value="North Master Field">North Master Field</option>';
+            FIELD_NAME_options_str  += '<option value="North Old House">North Old House</option>';
+            FIELD_NAME_options_str  += '<option value="North Thicket Line">North Thicket Line</option>';
+            FIELD_NAME_options_str  += '<option value="North Two Pond & Well">North Two Pond & Well</option>';
+            FIELD_NAME_options_str  += '<option value="North Upper Underhill">North Upper Underhill</option>';
+            FIELD_NAME_options_str  += '<option value="North Water Mill">North Water Mill</option>';
+            FIELD_NAME_options_str  += '<option value="North Will Johnson">North Will Johnson</option>';
+            FIELD_NAME_options_str  += '<option value="One Acre">One Acre</option>';
+            FIELD_NAME_options_str  += '<option value="Outram">Outram</option>';
+            FIELD_NAME_options_str  += '<option value="Pack House">Pack House</option>';
+            FIELD_NAME_options_str  += '<option value="Paddock Piece">Paddock Piece</option>';
+            FIELD_NAME_options_str  += '<option value="Parkinson">Parkinson</option>';
+            FIELD_NAME_options_str  += '<option value="Pasture">Pasture</option>';
+            FIELD_NAME_options_str  += '<option value="Pasture Field">Pasture Field</option>';
+            FIELD_NAME_options_str  += '<option value="Peggy">Peggy</option>';
+            FIELD_NAME_options_str  += '<option value="Plum Tree">Plum Tree</option>';
+            FIELD_NAME_options_str  += '<option value="Post Office">Post Office</option>';
+            FIELD_NAME_options_str  += '<option value="Quarry">Quarry</option>';
+            FIELD_NAME_options_str  += '<option value="Quarry Field">Quarry Field</option>';
+            FIELD_NAME_options_str  += '<option value="Rabbit Hole">Rabbit Hole</option>';
+            FIELD_NAME_options_str  += '<option value="Rail & Tank Field">Rail & Tank Field</option>';
+            FIELD_NAME_options_str  += '<option value="Redwood">Redwood</option>';
+            FIELD_NAME_options_str  += '<option value="Riot Field">Riot Field</option>';
+            FIELD_NAME_options_str  += '<option value="Sandy Hill Mill Field">Sandy Hill Mill Field</option>';
+            FIELD_NAME_options_str  += '<option value="Sandy Hill Upper and Lower Porch Door">Sandy Hill Upper and Lower Porch Door</option>';
+            FIELD_NAME_options_str  += '<option value="Sandy Hill Yard Field">Sandy Hill Yard Field</option>';
+            FIELD_NAME_options_str  += '<option value="Sandy Hill Yard and Pasture">Sandy Hill Yard and Pasture</option>';
+            FIELD_NAME_options_str  += '<option value="September">September</option>';
+            FIELD_NAME_options_str  += '<option value="Seven Acre Church Patch">Seven Acre Church Patch</option>';
+            FIELD_NAME_options_str  += '<option value="Shop Door">Shop Door</option>';
+            FIELD_NAME_options_str  += '<option value="Sink Hole">Sink Hole</option>';
+            FIELD_NAME_options_str  += '<option value="Sipoty 1">Sipoty 1</option>';
+            FIELD_NAME_options_str  += '<option value="Sipoty 2">Sipoty 2</option>';
+            FIELD_NAME_options_str  += '<option value="Sippia & Cow Pond">Sippia & Cow Pond</option>';
+            FIELD_NAME_options_str  += '<option value="Six Acre Bunyan & Jones Field">Six Acre Bunyan & Jones Field</option>';
+            FIELD_NAME_options_str  += '<option value="Slipe">Slipe</option>';
+            FIELD_NAME_options_str  += '<option value="Sour Grass Field">Sour Grass Field</option>';
+            FIELD_NAME_options_str  += '<option value="South 17 Acre">South 17 Acre</option>';
+            FIELD_NAME_options_str  += '<option value="South 18 Acre">South 18 Acre</option>';
+            FIELD_NAME_options_str  += '<option value="South Benny">South Benny</option>';
+            FIELD_NAME_options_str  += '<option value="South Bushy Park Line">South Bushy Park Line</option>';
+            FIELD_NAME_options_str  += '<option value="South Clarke">South Clarke</option>';
+            FIELD_NAME_options_str  += '<option value="South Cousins Hill">South Cousins Hill</option>';
+            FIELD_NAME_options_str  += '<option value="South Drip">South Drip</option>';
+            FIELD_NAME_options_str  += '<option value="South Gully Piece">South Gully Piece</option>';
+            FIELD_NAME_options_str  += '<option value="South Harding Door">South Harding Door</option>';
+            FIELD_NAME_options_str  += '<option value="South Long Ground">South Long Ground</option>';
+            FIELD_NAME_options_str  += '<option value="South Long Valley">South Long Valley</option>';
+            FIELD_NAME_options_str  += '<option value="South Lower Under Hill">South Lower Under Hill</option>';
+            FIELD_NAME_options_str  += '<option value="South Marl Hole">South Marl Hole</option>';
+            FIELD_NAME_options_str  += '<option value="South Master Field">South Master Field</option>';
+            FIELD_NAME_options_str  += '<option value="South Mill Field">South Mill Field</option>';
+            FIELD_NAME_options_str  += '<option value="South Murray">South Murray</option>';
+            FIELD_NAME_options_str  += '<option value="South Old House">South Old House</option>';
+            FIELD_NAME_options_str  += '<option value="South Seven Mile">South Seven Mile</option>';
+            FIELD_NAME_options_str  += '<option value="South Street Field">South Street Field</option>';
+            FIELD_NAME_options_str  += '<option value="South Twelve Acre">South Twelve Acre</option>';
+            FIELD_NAME_options_str  += '<option value="South Upper Underhill">South Upper Underhill</option>';
+            FIELD_NAME_options_str  += '<option value="South Water Mill">South Water Mill</option>';
+            FIELD_NAME_options_str  += '<option value="South Will Johnson">South Will Johnson</option>';
+            FIELD_NAME_options_str  += '<option value="Spraatt">Spraatt</option>';
+            FIELD_NAME_options_str  += '<option value="Spring Head">Spring Head</option>';
+            FIELD_NAME_options_str  += '<option value="Stable Field">Stable Field</option>';
+            FIELD_NAME_options_str  += '<option value="Steam Mill">Steam Mill</option>';
+            FIELD_NAME_options_str  += '<option value="Stirling Plantation Yard">Stirling Plantation Yard</option>';
+            FIELD_NAME_options_str  += '<option value="Stock Piece">Stock Piece</option>';
+            FIELD_NAME_options_str  += '<option value="Stoke Field">Stoke Field</option>';
+            FIELD_NAME_options_str  += '<option value="Stoke Hole">Stoke Hole</option>';
+            FIELD_NAME_options_str  += '<option value="Stokes Hole">Stokes Hole</option>';
+            FIELD_NAME_options_str  += '<option value="Sweet Field & Drinking Water">Sweet Field & Drinking Water</option>';
+            FIELD_NAME_options_str  += '<option value="Tennis Spot">Tennis Spot</option>';
+            FIELD_NAME_options_str  += '<option value="Thickets">Thickets</option>';
+            FIELD_NAME_options_str  += '<option value="Three Acre">Three Acre</option>';
+            FIELD_NAME_options_str  += '<option value="Thurban Mill Field">Thurban Mill Field</option>';
+            FIELD_NAME_options_str  += '<option value="Tom Cooke">Tom Cooke</option>';
+            FIELD_NAME_options_str  += '<option value="Tom Holland">Tom Holland</option>';
+            FIELD_NAME_options_str  += '<option value="Twelve Acre">Twelve Acre</option>';
+            FIELD_NAME_options_str  += '<option value="Upper Butlers">Upper Butlers</option>';
+            FIELD_NAME_options_str  += '<option value="Upper Calf Pen">Upper Calf Pen</option>';
+            FIELD_NAME_options_str  += '<option value="Upper Carters">Upper Carters</option>';
+            FIELD_NAME_options_str  += '<option value="Upper Chaplim">Upper Chaplim</option>';
+            FIELD_NAME_options_str  += '<option value="Upper Drinking Pond">Upper Drinking Pond</option>';
+            FIELD_NAME_options_str  += '<option value="Upper Eight Acre">Upper Eight Acre</option>';
+            FIELD_NAME_options_str  += '<option value="Upper Fannell (Farrell?)">Upper Fannell (Farrell?)</option>';
+            FIELD_NAME_options_str  += '<option value="Upper Middle Valley">Upper Middle Valley</option>';
+            FIELD_NAME_options_str  += '<option value="Upper North Crickat Ground">Upper North Crickat Ground</option>';
+            FIELD_NAME_options_str  += '<option value="Upper North Murray">Upper North Murray</option>';
+            FIELD_NAME_options_str  += '<option value="Upper Pollard">Upper Pollard</option>';
+            FIELD_NAME_options_str  += '<option value="Upper Pond Field">Upper Pond Field</option>';
+            FIELD_NAME_options_str  += '<option value="Upper Railway Line ?">Upper Railway Line ?</option>';
+            FIELD_NAME_options_str  += '<option value="Upper South Cricket">Upper South Cricket</option>';
+            FIELD_NAME_options_str  += '<option value="Valley">Valley</option>';
+            FIELD_NAME_options_str  += '<option value="Valley Field">Valley Field</option>';
+            FIELD_NAME_options_str  += '<option value="Vallley Plantation Yard">Vallley Plantation Yard</option>';
+            FIELD_NAME_options_str  += '<option value="Vestry Field">Vestry Field</option>';
+            FIELD_NAME_options_str  += '<option value="Warrick">Warrick</option>';
+            FIELD_NAME_options_str  += '<option value="Water Course">Water Course</option>';
+            FIELD_NAME_options_str  += '<option value="Water Mill">Water Mill</option>';
+            FIELD_NAME_options_str  += '<option value="Water Mill Field">Water Mill Field</option>';
+            FIELD_NAME_options_str  += '<option value="Well Field">Well Field</option>';
+            FIELD_NAME_options_str  += '<option value="Well Ground">Well Ground</option>';
+            FIELD_NAME_options_str  += '<option value="West Cow House">West Cow House</option>';
+            FIELD_NAME_options_str  += '<option value="Windsor Plantation Yard">Windsor Plantation Yard</option>';
+            FIELD_NAME_options_str  += '<option value="Wirg House">Wirg House</option>';
+            FIELD_NAME_options_str  += '<option value="Wood Ground">Wood Ground</option>';
+            FIELD_NAME_options_str  += '<option value="Wood Valley">Wood Valley</option>';
+            sel_FIELD_NAME.innerHTML = FIELD_NAME_options_str;
+            div_FIELD_NAME.appendChild(sel_FIELD_NAME);
+            var lab_FIELD_NAME = document.createElement('div');
+            lab_FIELD_NAME.innerHTML = 'FIELD_NAME';
+            lab_FIELD_NAME.className = 'filterlabel';
+            div_FIELD_NAME.appendChild(lab_FIELD_NAME);
+            var reset_FIELD_NAME = document.createElement('div');
+            reset_FIELD_NAME.innerHTML = 'clear filter';
+            reset_FIELD_NAME.className = 'filterlabel';
+            reset_FIELD_NAME.onclick = function() {
+                var options = document.getElementById("sel_FIELD_NAME").options;
+                for (var i=0; i < options.length; i++) {
+                    options[i].selected = false;
+                }
+                filterFunc();
+            };
+            div_FIELD_NAME.appendChild(reset_FIELD_NAME);
+        resetLabels([layer_Railway_Fields_5]);
+        map.on("zoomend", function(){
+            resetLabels([layer_Railway_Fields_5]);
+        });
+        map.on("layeradd", function(){
+            resetLabels([layer_Railway_Fields_5]);
+        });
+        map.on("layerremove", function(){
+            resetLabels([layer_Railway_Fields_5]);
+        });
+        </script>
+    </body>
+</html>
